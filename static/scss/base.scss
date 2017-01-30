@@ -1,0 +1,18 @@
+@import "~bulma";
+
+// General
+body {
+  padding:40px 60px;
+}
+
+// Modules
+.counter {
+  padding:5px 10px;
+  font-size:22px;
+  * {
+    vertical-align: middle;
+  }
+  a {
+    margin:5px;
+  }
+}

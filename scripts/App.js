@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import $ from 'webpack-zepto';
 import { LineChart, Line, XAxis, YAxis} from 'recharts';
+require("./../static/scss/base.scss");
+
 
 class Grade extends Component {
   constructor(props) {
@@ -19,11 +21,11 @@ class Grade extends Component {
 
   render () {
     return (
-       <div id="">
+       <div className="counter">
          <span>V{this.props.num} &nbsp;</span>
          <span> {this.props.count}  &nbsp;</span>
-         <button onClick={this.incrementCount} id="addButton">+</button>
-         <button onClick={this.decrementCount} id="minusButton">-</button>
+         <a className="button" onClick={this.incrementCount} id="addButton">+</a>
+         <a className="button" onClick={this.decrementCount} id="minusButton">-</a>
        </div>
      )
   }
@@ -166,23 +168,41 @@ export default class App extends Component {
 
     return (
       // Add your component markup and other subcomponent references here.
-      <div>
-        <h1>Today</h1>
-        <div><p>Total: {sum}</p></div>
-        {grades}
-        <button onClick={this.saveGrades}>Save</button>
-        <div>
-          <label htmlFor="date">Date</label>
-          <input id="date" value={this.state.today} onChange={this.updateDate}/>
+      <div className="columns">
+        <div className="column">
+          <h1 className="title is-1">Today</h1>
+          <div><p>Total: {sum}</p></div>
+          {grades}
+          <a className="button" onClick={this.saveGrades}>Save</a>
+          <div>
+            <label htmlFor="date">Date</label>
+            <input id="date" value={this.state.today} onChange={this.updateDate}/>
+          </div>
+          <progress className="progress" value="15" max="100">15%</progress>
+
+          <h1 className="title is-1">Previous Days</h1>
+          <LineChart width={300} height={100} data={this.state.formattedPrevious}>
+            <Line type='monotone' dataKey='sum' stroke='#8884d8' strokeWidth={2} />
+            <XAxis dataKey="name" />
+            <YAxis dataKey="sum" />
+          </LineChart>
+
+          <table className="table">
+            <thead>
+              <tr>
+                <th><abbr title="Position">Pos</abbr></th>
+                <th>Team</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>1</th>
+                <td><a href="https://en.wikipedia.org/wiki/Leicester_City_F.C." title="Leicester City F.C.">Leicester City</a> <strong>(C)</strong>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <h1>Previous Days</h1>
-
-
-        <LineChart width={300} height={100} data={this.state.formattedPrevious}>
-          <Line type='monotone' dataKey='sum' stroke='#8884d8' strokeWidth={2} />
-          <XAxis dataKey="name" />
-          <YAxis dataKey="sum" />
-        </LineChart>
       </div>
 
     );
