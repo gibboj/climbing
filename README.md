@@ -1,6 +1,13 @@
 # Climbing Tracker
 It just counts things, but it has the labels I want
 
+Running
+DEV
+
+PROD
+* sudo forever start prod-server.js
+
+
 ## Uses:
 * React ES6 Webpack Boilerplate
 * Rechart (regretting this already)

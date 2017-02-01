@@ -27,8 +27,12 @@
   "homepage": "https://github.com/vasanthk/react-es6-webpack-boilerplate",
   "dependencies": {
     "babel-runtime": "^6.20.0",
+    "body-parser": "^1.16.0",
     "react": "^15.4.1",
-    "react-dom": "^15.4.1"
+    "react-dom": "^15.4.1",
+    "recharts": "^0.20.5",
+    "redis": "^2.6.5",
+    "webpack-zepto": "0.0.1"
   },
   "devDependencies": {
     "babel-core": "^6.21.0",
