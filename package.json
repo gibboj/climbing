@@ -28,7 +28,9 @@
   "dependencies": {
     "babel-runtime": "^6.20.0",
     "body-parser": "^1.16.0",
+    "bulma": "^0.3.1",
     "css-loader": "^0.26.1",
+    "extract-text-webpack-plugin": "^1.0.1",
     "node-sass": "^4.5.0",
     "react": "^15.4.1",
     "react-dom": "^15.4.1",
