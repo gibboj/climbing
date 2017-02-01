@@ -46,6 +46,7 @@
 
 const webpack = require('webpack');
 const path = require('path');
+var ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 module.exports = {
   entry: './scripts/index',
@@ -69,7 +70,8 @@ module.exports = {
       compress: {
         warnings: false
       }
-    })
+    }),
+    new ExtractTextPlugin("[name].css")
   ],
   module: {
     loaders: [
@@ -77,6 +79,10 @@ module.exports = {
         test: /\.jsx?$/,
         loaders: ['babel'],
         include: path.join(__dirname, 'scripts')
+      },
+      {
+        test: /\.scss$/,
+        loaders: ["style-loader", "css-loader", "sass-loader"]
       }
     ]
   }
