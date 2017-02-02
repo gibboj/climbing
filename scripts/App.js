@@ -1,32 +1,37 @@
 import React, { Component } from 'react';
 import $ from 'webpack-zepto';
+import Grade from './modules/Grades.js';
 import { LineChart, Line, XAxis, YAxis} from 'recharts';
 require("./../static/scss/base.scss");
 
-
-class Grade extends Component {
+class Tab extends Component {
   constructor(props) {
     super(props);
-    this.incrementCount = this.incrementCount.bind(this);
-    this.decrementCount = this.decrementCount.bind(this);
   }
 
-  decrementCount(amt) {
-    this.props.onChange(this.props.num, -1);
+  render() {
+    return (
+      <li className={this.props.isactive ? 'is-active':''}>
+        <a onClick={this.props.onClick}>
+          <span>{this.props.name}</span>
+        </a>
+      </li>
+    )
   }
+}
 
-  incrementCount(amt) {
-    this.props.onChange(this.props.num, 1);
+class TodayOptions extends Component {
+  constructor(props) {
+    super(props);
   }
 
   render () {
     return (
-       <div className="counter">
-         <span>V{this.props.num} &nbsp;</span>
-         <span> {this.props.count}  &nbsp;</span>
-         <a className="button" onClick={this.incrementCount} id="addButton">+</a>
-         <a className="button" onClick={this.decrementCount} id="minusButton">-</a>
-       </div>
+      <div className="moreOptionsContent">
+        <h1 className="title is-h1">Save Options</h1>
+        <label className="label" htmlFor="date">Date</label>
+        <input className="input" id="date" value={this.props.today} onChange={this.props.onChangeDate}/>
+      </div>
      )
   }
 }
@@ -35,15 +40,21 @@ export default class App extends Component {
   constructor(props) {
     super(props);
 
+
     this.state = {
       counts:[],
       sum:0,
+      goal:50,
       topGrade:6,
       uid:1,
       today: '',
       previous:[],
-      formattedPrevious:[]
+      formattedPrevious:[],
+      showOptions: false,
+      activeTab: 'today'
     };
+    //this.handleTabClick= this.handleTabClick.bind(this);
+    this.handleMoreOptionsClick = this.handleMoreOptionsClick.bind(this);
     this.updateCount = this.updateCount.bind(this);
     this.updateDate = this.updateDate.bind(this);
     this.saveGrades = this.saveGrades.bind(this);
@@ -157,54 +168,82 @@ export default class App extends Component {
     counts[grade] = Math.max(parseInt(counts[grade], 10) + amt, 0);
     this.setState({counts:counts});
   }
+  handleTabClick(name, event) {
+    this.setState({activeTab:name});
+  }
+  handleMoreOptionsClick(e) {
+    this.setState({showOptions: !this.state.showOptions});
+  }
 
   render() {
     var self = this;
 
     let grades = this.state.counts.map(function(count, grade){
-      return <Grade key={grade+"_grade"} num={ grade } count={count} onChange={self.updateCount}/>;
+      return <Grade key={grade+"_grade"} num={grade} count={count} onChange={self.updateCount}/>;
     });
     let sum = this.sumCounts(this.state.counts);
-
+    let tabs = this.props.tabs.map(function(tabName){
+      return <Tab key={tabName+"_tab"} onClick={self.handleTabClick.bind(self, tabName)} name={tabName} isactive={self.state.activeTab === tabName ? true: false}></Tab>
+    }) ;
     return (
+
       // Add your component markup and other subcomponent references here.
-      <div className="columns">
-        <div className="column">
-          <h1 className="title is-1">Today</h1>
-          <div><p>Total: {sum}</p></div>
-          {grades}
-          <a className="button" onClick={this.saveGrades}>Save</a>
-          <div>
-            <label htmlFor="date">Date</label>
-            <input id="date" value={this.state.today} onChange={this.updateDate}/>
+      <div className="section">
+        <div className="tabs is-boxed is-centered">
+          <ul>
+            {tabs}
+          </ul>
+        </div>
+        <div className="columns">
+          <div className={this.state.activeTab === 'today' ? 'is-active tab-pane column': 'tab-pane column'}>
+            <h1 className="title is-1">Today</h1>
+            <div><p>Total: {sum}</p></div>
+            <progress className="progress" value={sum} max={this.state.goal}>{sum}%</progress>
+            {grades}
+
+            <a className="button is-primary" onClick={this.saveGrades}>Save</a><br/>
+            <div>
+              <a className="button moreOptions  is-small" onClick={this.handleMoreOptionsClick}>More Options</a>
+              { this.state.showOptions ? <TodayOptions /> : null }
+            </div>
           </div>
-          <progress className="progress" value="15" max="100">15%</progress>
 
-          <h1 className="title is-1">Previous Days</h1>
-          <LineChart width={300} height={100} data={this.state.formattedPrevious}>
-            <Line type='monotone' dataKey='sum' stroke='#8884d8' strokeWidth={2} />
-            <XAxis dataKey="name" />
-            <YAxis dataKey="sum" />
-          </LineChart>
-
-          <table className="table">
-            <thead>
+          <div className={this.state.activeTab === 'history' ? 'is-active tab-pane column': 'tab-pane column'}>
+            <h1 className="title is-1">Previous Days</h1>
+            <LineChart width={300} height={100} data={this.state.formattedPrevious}>
+              <Line type='monotone' dataKey='sum' stroke='#8884d8' strokeWidth={2} />
+              <XAxis dataKey="name" />
+              <YAxis dataKey="sum" />
+            </LineChart>
+            <table className="table">
+              <thead>
               <tr>
                 <th><abbr title="Position">Pos</abbr></th>
                 <th>Team</th>
               </tr>
-            </thead>
-            <tbody>
+              </thead>
+              <tbody>
               <tr>
                 <th>1</th>
                 <td><a href="https://en.wikipedia.org/wiki/Leicester_City_F.C." title="Leicester City F.C.">Leicester City</a> <strong>(C)</strong>
                 </td>
               </tr>
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
+          <div className={this.state.activeTab === 'settings' ? 'is-active tab-pane column': 'tab-pane column'}>
+            <h1 className="title is-1">Settings</h1>
+            <div><p>Goal: {this.state.goal}</p></div>
+            <div><p>Top Grade: {this.state.topGrade}</p></div>
+          </div>
         </div>
       </div>
 
     );
+
+
   }
+}
+App.defaultProps = {
+  tabs:['today', 'history', 'settings']
 }
