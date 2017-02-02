@@ -8,7 +8,7 @@ new WebpackDevServer(webpack(config), {
   quiet: false,
   stats: { colors: true },
   proxy: {
-    "*": "http://localhost:5001"
+    '*': 'http://localhost:5001'
   },
   historyApiFallback: true
 }).listen(5000, 'localhost', (err) => {

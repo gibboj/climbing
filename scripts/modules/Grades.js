@@ -7,19 +7,23 @@ export default class Grade extends Component {
     this.decrementCount = this.decrementCount.bind(this);
   }
 
-  decrementCount(amt) {
+  decrementCount() {
     this.props.onChange(this.props.num, -1);
   }
 
-  incrementCount(amt) {
+  incrementCount() {
     this.props.onChange(this.props.num, 1);
   }
 
   render () {
     return (
       <div className="counter">
-        <span>V{this.props.num} &nbsp;</span>
-        <span> {this.props.count}  &nbsp;</span>
+        <div className="count left">
+          <span>V{this.props.num} &nbsp;</span>
+        </div>
+        <div className="count">
+          <span className="subtitle is-2"> {this.props.count}</span>
+        </div>
         <a className="button" onClick={this.incrementCount} id="addButton">+</a>
         <a className="button" onClick={this.decrementCount} id="minusButton">-</a>
       </div>

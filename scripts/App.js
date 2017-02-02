@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import $ from 'webpack-zepto';
 import Grade from './modules/Grades.js';
-import { LineChart, Line, XAxis, YAxis} from 'recharts';
+import { LineChart,ResponsiveContainer,Tooltip, Line, XAxis, YAxis} from 'recharts';
 require("./../static/scss/base.scss");
 
 class Tab extends Component {
@@ -39,7 +39,6 @@ class TodayOptions extends Component {
 export default class App extends Component {
   constructor(props) {
     super(props);
-
 
     this.state = {
       counts:[],
@@ -81,7 +80,7 @@ export default class App extends Component {
           state.counts = res[0].split(',');
         }  else {
           state.counts=[];
-          for (let i=0; i < self.state.topGrade; i++) {
+          for (let i = 0; i < self.state.topGrade; i++) {
             state.counts.push(0);
           }
         }
@@ -95,21 +94,27 @@ export default class App extends Component {
       }
     });
   }
+
+  getDateFromString (day) {
+    var months = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sept", "Oct", "Nov", "Dec" ];
+    let date = day.substring(0, 2);
+    let month = parseInt(day.substring(2, 4), 10);
+    return date+' '+months[month-1];
+  }
+
   formatPreviousGraph (previous) {
     let data = [];
+    var self = this;
     previous.map(function(climbs, index) {
       let sum = 0;
-      var months = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sept", "Oct", "Nov", "Dec" ];
       climbs.climbs.map(function( count, i){
         sum += parseInt(count,10) * i;
-        return <span> V{i} - {count} | </span>;
       });
-      let date = climbs.day.substring(0, 2);
-      let month = parseInt(climbs.day.substring(2, 4), 10);
-      data[index] = {name: date+' '+months[month-1], sum:sum};
+      let date = self.getDateFromString(climbs.day);
+      data[index] = {name: date, points:sum};
     });
-    return data
+    return data;
   }
 
   saveGrades() {
@@ -135,9 +140,9 @@ export default class App extends Component {
 
         if (res.result == 'success') {
           let updated = false;
-          for (let i = 0; i < self.state.previous.length;i++) {
-            if(self.state.previous[i].day === today) {
-              self.state.previous[i].climbs = self.state.counts;
+          for (let i = 0; i < previous.length;i++) {
+            if (previous[i].day === today) {
+              previous[i].climbs = self.state.counts;
               updated = true;
             }
           }
@@ -146,11 +151,11 @@ export default class App extends Component {
             previous.push({'day':today, climbs: self.state.counts});
           }
         } else {
-          self.showError("could not save grades");
+          self.showError("could not save grades!");
         }
 
         let formattedPrevious = self.formatPreviousGraph(previous);
-        self.setState({formattedPrevious, previous});
+        self.setState({formattedPrevious: formattedPrevious, previous:previous});
       }
     });
   }
@@ -168,9 +173,11 @@ export default class App extends Component {
     counts[grade] = Math.max(parseInt(counts[grade], 10) + amt, 0);
     this.setState({counts:counts});
   }
+
   handleTabClick(name, event) {
     this.setState({activeTab:name});
   }
+
   handleMoreOptionsClick(e) {
     this.setState({showOptions: !this.state.showOptions});
   }
@@ -182,66 +189,110 @@ export default class App extends Component {
       return <Grade key={grade+"_grade"} num={grade} count={count} onChange={self.updateCount}/>;
     });
     let sum = this.sumCounts(this.state.counts);
+    let maxColumns = 1;
+    let rows = this.state.previous.map(function(climbs, index) {
+      let i = [(<td>{self.getDateFromString(climbs.day)}</td>)];
+      for (let c in climbs.climbs) {
+        i.push(<td>{climbs.climbs[c]}</td>);
+        maxColumns = Math.max(maxColumns, c);
+      }
+      return <tr>{i}</tr>
+    });
+
+    let header = [];
+    for (let i=0; i <= maxColumns; i++) {
+      header.push(<th>V{i}</th>);
+    }
+
     let tabs = this.props.tabs.map(function(tabName){
       return <Tab key={tabName+"_tab"} onClick={self.handleTabClick.bind(self, tabName)} name={tabName} isactive={self.state.activeTab === tabName ? true: false}></Tab>
-    }) ;
-    return (
+    });
 
+    return (
       // Add your component markup and other subcomponent references here.
-      <div className="section">
+      <div className="main-container">
         <div className="tabs is-boxed is-centered">
           <ul>
             {tabs}
           </ul>
         </div>
-        <div className="columns">
-          <div className={this.state.activeTab === 'today' ? 'is-active tab-pane column': 'tab-pane column'}>
-            <h1 className="title is-1">Today</h1>
-            <div><p>Total: {sum}</p></div>
-            <progress className="progress" value={sum} max={this.state.goal}>{sum}%</progress>
-            {grades}
 
-            <a className="button is-primary" onClick={this.saveGrades}>Save</a><br/>
-            <div>
-              <a className="button moreOptions  is-small" onClick={this.handleMoreOptionsClick}>More Options</a>
-              { this.state.showOptions ? <TodayOptions /> : null }
-            </div>
+        <div className={this.state.activeTab === 'today' ? 'is-active tab-pane': 'tab-pane '}>
+          <div className="level">
+            <div className="level-left"><h1 className="title is-1 ">Today</h1></div>
+            <div className="level-right"><a className="button is-primary level-right" onClick={this.saveGrades}>Save</a></div>
+          </div>
+          <div><p className="subtitle is-3">Points: {sum} / {this.state.goal}</p></div>
+          <progress className="progress" value={sum} max={this.state.goal}>{sum}%</progress>
+          {grades}
+          <div>
+            <br/>
+            <a className="button moreOptions is-small" onClick={this.handleMoreOptionsClick}>More Options</a>
+            { this.state.showOptions ? <TodayOptions /> : null }
+          </div>
+        </div>
+
+        <div className={this.state.activeTab === 'history' ? 'is-active tab-pane': 'tab-pane'}>
+          <h1 className="title is-1">History</h1>
+          <div>
+            <h1 className="title is-3">Daily Point Sum</h1>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={this.state.formattedPrevious}>
+              <Line type='monotone' dataKey='points' stroke='#8884d8' strokeWidth={2} />
+                <XAxis dataKey="name" />
+                <YAxis dataKey="points" />
+                <Tooltip />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
 
-          <div className={this.state.activeTab === 'history' ? 'is-active tab-pane column': 'tab-pane column'}>
-            <h1 className="title is-1">Previous Days</h1>
-            <LineChart width={300} height={100} data={this.state.formattedPrevious}>
-              <Line type='monotone' dataKey='sum' stroke='#8884d8' strokeWidth={2} />
-              <XAxis dataKey="name" />
-              <YAxis dataKey="sum" />
-            </LineChart>
+          <div id="all-data">
+            <h1 className="title is-3">All Data</h1>
             <table className="table">
               <thead>
-              <tr>
-                <th><abbr title="Position">Pos</abbr></th>
-                <th>Team</th>
-              </tr>
+                <tr>
+                  <th><abbr title="date">Date</abbr></th>
+                  {header}
+                </tr>
               </thead>
               <tbody>
-              <tr>
-                <th>1</th>
-                <td><a href="https://en.wikipedia.org/wiki/Leicester_City_F.C." title="Leicester City F.C.">Leicester City</a> <strong>(C)</strong>
-                </td>
-              </tr>
+              {rows}
               </tbody>
             </table>
           </div>
-          <div className={this.state.activeTab === 'settings' ? 'is-active tab-pane column': 'tab-pane column'}>
-            <h1 className="title is-1">Settings</h1>
-            <div><p>Goal: {this.state.goal}</p></div>
-            <div><p>Top Grade: {this.state.topGrade}</p></div>
+        </div>
+
+        <div className={this.state.activeTab === 'settings' ? 'is-active tab-pane': 'tab-pane '}>
+          <h1 className="title is-1">Settings</h1>
+          <div className="columns">
+            <form className="column">
+              <label className="label" htmlFor="goal">Goal</label>
+              <input className="input" id="goal" value={this.state.goal} onChange={this.props.onChangeDate}/>
+              <label className="label" htmlFor="topGrade">Top Grade</label>
+              <p className="control">
+                <span className="select is-medium">
+                  <select>
+                    <option>3</option>
+                    <option>4</option>
+                    <option>5</option>
+                    <option>6</option>
+                    <option>7</option>
+                    <option>8</option>
+                    <option>9</option>
+                    <option>10</option>
+                    <option>11</option>
+                    <option>12</option>
+                  </select>
+                </span>
+              </p>
+            </form>
+            <div className="column"></div>
           </div>
         </div>
+
       </div>
 
     );
-
-
   }
 }
 App.defaultProps = {
