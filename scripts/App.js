@@ -74,16 +74,17 @@ export default class App extends Component {
 
         if (res[1]) {
           state.previous = res[1];
-          state.formattedPrevious = self.formatPreviousGraph(state.previous);
         }
+        state.formattedPrevious = self.formatPreviousGraph(state.previous);
 
-        if(res[2]) {
+        if (res[2]) {
           state.goal = res[2];
         }
 
-        if(res[3]) {
+        if (res[3]) {
           state.topGrade = res[3];
         }
+
         self.setState(state);
       }
     });
@@ -92,13 +93,14 @@ export default class App extends Component {
 
   formatPreviousGraph(previous) {
     const self = this;
+
     return previous.map((climbs) => {
       let sum = 0;
       climbs.climbs.map((count, i) => {
         sum += parseInt(count, 10) * i;
       });
 
-      return { name: self.constructor.getDateFromString(climbs.day), points: sum };
+      return { name: self.constructor.getDateFromString(climbs.day), points: sum, goals: climbs.goals};
     });
   }
 
@@ -144,7 +146,6 @@ export default class App extends Component {
   }
 
   saveSettings() {
-    const self = this;
     let url = `/api/settings/${this.state.uid}`;
 
     $.ajax({
@@ -194,6 +195,7 @@ export default class App extends Component {
     const sum = this.constructor.sumCounts(this.state.counts);
 
     let maxColumns = 1;
+
     const rows = this.state.previous.map((climbs) => {
       const i = climbs.climbs.map( (climbCount, index) => {
         maxColumns = Math.max(maxColumns, index);
@@ -242,10 +244,11 @@ export default class App extends Component {
             <h1 className="title is-3">Daily Point Sum</h1>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={this.state.formattedPrevious}>
-                <Line type="monotone" dataKey="points" stroke="#8884d8" strokeWidth={2} />
+                <Line type="natural" dataKey="points" stroke="#ff7300" strokeWidth={2} />
+                <Line type="stepBefore" dataKey="goals" stroke="#8884d8" strokeWidth={2} />
                 <XAxis dataKey="name" />
-                <YAxis dataKey="points" />
-                <Tooltip />
+                <YAxis/>
+                <Tooltip/>
               </LineChart>
             </ResponsiveContainer>
           </div>

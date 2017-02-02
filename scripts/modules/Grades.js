@@ -32,7 +32,7 @@ export default class Grade extends Component {
 }
 
 Grade.propTypes = {
-  count: React.PropTypes.number.isRequired,
+  count: React.PropTypes.string.isRequired,
   onChange: React.PropTypes.func.isRequired,
   num: React.PropTypes.number.isRequired
 };
