@@ -25,6 +25,21 @@ app.get('/api/climbs/:uid', (req, res) => {
   redis.getLoadData(req.params.uid, callback);
 });
 
+app.post('/api/settings/:uid', jsonParser, (req, res) => {
+  if (req.body) {
+    const topGrade = req.body.topGrade;
+    const goal = req.body.goal;
+    if (topGrade || goal) {
+      const result = redis.saveSettings(req.params.uid, {topGrade, goal});
+      if (result) {
+        res.send({ result: 'success' });
+        return;
+      }
+    }
+  }
+  res.send({ result: 'error' });
+});
+
 
 app.post('/api/climbs/:uid/date/:date', jsonParser, (req, res) => {
   const grade = req.body.grades;

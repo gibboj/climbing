@@ -1,146 +1,131 @@
 import React, { Component } from 'react';
 import $ from 'webpack-zepto';
-import Grade from './modules/Grades.js';
-import { LineChart,ResponsiveContainer,Tooltip, Line, XAxis, YAxis} from 'recharts';
-require("./../static/scss/base.scss");
+import { LineChart, ResponsiveContainer, Tooltip, Line, XAxis, YAxis } from 'recharts';
+import Grade from './modules/Grades';
+import Tab from './modules/Tab';
+import TodayOptions from './modules/TodayOptions';
 
-class Tab extends Component {
-  constructor(props) {
-    super(props);
-  }
+require('./../static/scss/base.scss');
 
-  render() {
-    return (
-      <li className={this.props.isactive ? 'is-active':''}>
-        <a onClick={this.props.onClick}>
-          <span>{this.props.name}</span>
-        </a>
-      </li>
-    )
-  }
-}
-
-class TodayOptions extends Component {
-  constructor(props) {
-    super(props);
-  }
-
-  render () {
-    return (
-      <div className="moreOptionsContent">
-        <h1 className="title is-h1">Save Options</h1>
-        <label className="label" htmlFor="date">Date</label>
-        <input className="input" id="date" value={this.props.today} onChange={this.props.onChangeDate}/>
-      </div>
-     )
-  }
-}
 
 export default class App extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      counts:[],
-      sum:0,
-      goal:50,
-      topGrade:6,
-      uid:1,
-      today: '',
-      previous:[],
-      formattedPrevious:[],
-      showOptions: false,
-      activeTab: 'today'
-    };
-    //this.handleTabClick= this.handleTabClick.bind(this);
-    this.handleMoreOptionsClick = this.handleMoreOptionsClick.bind(this);
-    this.updateCount = this.updateCount.bind(this);
-    this.updateDate = this.updateDate.bind(this);
-    this.saveGrades = this.saveGrades.bind(this);
+  static getDateFromString (day) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+    const date = day.substring(0, 2);
+    const month = parseInt(day.substring(2, 4), 10);
+    return date + ' ' + months[month - 1];
   }
 
-  sumCounts(counts) {
+  static sumCounts(counts) {
     let sum = 0;
-    for (let grade in counts) {
+    for (const grade in counts) {
       sum += grade * counts[grade];
     }
     return sum;
   }
 
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      counts: [],
+      sum: 0,
+      goal: 50,
+      topGrade: 6,
+      uid: 1,
+      today: '',
+      previous: [],
+      formattedPrevious: [],
+      showOptions: false,
+      activeTab: 'today'
+    };
+
+    this.handleMoreOptionsClick = this.handleMoreOptionsClick.bind(this);
+    this.updateCount = this.updateCount.bind(this);
+    this.updateDate = this.updateDate.bind(this);
+    this.updateGoal = this.updateGoal.bind(this);
+    this.updateTopGrade = this.updateTopGrade.bind(this);
+    this.saveGrades = this.saveGrades.bind(this);
+    this.saveSettings= this.saveSettings.bind(this);
+  }
+
+
   componentDidMount() {
-    var self = this;
-    let url = '/api/climbs/'+this.state.uid;
+    const self = this;
+    const url = `/api/climbs/${this.state.uid}`;
     $.ajax({
-      url:url,
+      url,
       contentType: 'application/json',
-      type: "GET",
-      success:function (res) {
-        let state = {};
+      type: 'GET',
+      success: (res) => {
+        const state = {};
         if (res[0] && res[0].length > 0) {
           state.counts = res[0].split(',');
-        }  else {
-          state.counts=[];
-          for (let i = 0; i < self.state.topGrade; i++) {
+          for (let i = state.counts.length; i < self.state.topGrade + 1; i += 1) {
+            state.counts.push(0);
+          }
+        } else {
+          state.counts = [];
+          for (let i = 0; i < self.state.topGrade + 1; i += 1) {
             state.counts.push(0);
           }
         }
 
-        if(typeof res[1]) {
+        if (res[1]) {
           state.previous = res[1];
           state.formattedPrevious = self.formatPreviousGraph(state.previous);
         }
 
+        if(res[2]) {
+          state.goal = res[2];
+        }
+
+        if(res[3]) {
+          state.topGrade = res[3];
+        }
         self.setState(state);
       }
     });
   }
 
-  getDateFromString (day) {
-    var months = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sept", "Oct", "Nov", "Dec" ];
-    let date = day.substring(0, 2);
-    let month = parseInt(day.substring(2, 4), 10);
-    return date+' '+months[month-1];
-  }
 
-  formatPreviousGraph (previous) {
-    let data = [];
-    var self = this;
-    previous.map(function(climbs, index) {
+  formatPreviousGraph(previous) {
+    const self = this;
+    return previous.map((climbs) => {
       let sum = 0;
-      climbs.climbs.map(function( count, i){
-        sum += parseInt(count,10) * i;
+      climbs.climbs.map((count, i) => {
+        sum += parseInt(count, 10) * i;
       });
-      let date = self.getDateFromString(climbs.day);
-      data[index] = {name: date, points:sum};
+
+      return { name: self.constructor.getDateFromString(climbs.day), points: sum };
     });
-    return data;
   }
 
   saveGrades() {
-    var self = this;
-    let url = '/api/climbs/'+this.state.uid;
+    const self = this;
+    let url = `/api/climbs/${this.state.uid}`;
     if (this.state.today) {
-      url += '/date/' + this.state.today;
+      url += `/date/${this.state.today}`;
     }
     $.ajax({
-      url:url,
+      url,
       contentType: 'application/json',
-      type: "POST",
-      data: JSON.stringify({grades : this.state.counts}),
-      success:function (res) {
-        let previous = self.state.previous;
+      type: 'POST',
+      data: JSON.stringify({ grades: this.state.counts }),
+      success: (res) => {
+        const previous = self.state.previous;
         let today = self.state.today;
         if (!today) {
           today = new Date();
-          today = [("0" + today.getDate()).slice(-2),  // Get day and pad it with zeroes
-            ("0" + (today.getMonth() + 1)).slice(-2),      // Get month and pad it with zeroes
+          today = [('0' + today.getDate()).slice(-2),  // Get day and pad it with zeroes
+            ('0' + (today.getMonth() + 1)).slice(-2),      // Get month and pad it with zeroes
             today.getFullYear()].join('');
         }
 
-        if (res.result == 'success') {
+        if (res.result === 'success') {
           let updated = false;
-          for (let i = 0; i < previous.length;i++) {
+          for (let i = 0; i < previous.length; i += 1) {
             if (previous[i].day === today) {
               previous[i].climbs = self.state.counts;
               updated = true;
@@ -148,64 +133,83 @@ export default class App extends Component {
           }
 
           if (!updated) {
-            previous.push({'day':today, climbs: self.state.counts});
+            previous.push({ day: today, climbs: self.state.counts });
           }
         } else {
-          self.showError("could not save grades!");
+          self.showError('could not save grades!');
         }
+        self.setState({ formattedPrevious: self.formatPreviousGraph(previous), previous });
+      }
+    });
+  }
 
-        let formattedPrevious = self.formatPreviousGraph(previous);
-        self.setState({formattedPrevious: formattedPrevious, previous:previous});
+  saveSettings() {
+    const self = this;
+    let url = `/api/settings/${this.state.uid}`;
+
+    $.ajax({
+      url,
+      contentType: 'application/json',
+      type: 'POST',
+      data: JSON.stringify({ topGrade: this.state.topGrade, goal: this.state.goal }),
+      success: (res) => {
+        console.log(res.result);
       }
     });
   }
 
   showError(msg) {
-    this.setState({'error':msg});
+    this.setState({ error: msg });
   }
 
   updateDate(event) {
-    this.setState({today:event.target.value});
+    this.setState({ today: event.target.value });
   }
 
   updateCount(grade, amt) {
-    let counts = this.state.counts;
+    const counts = this.state.counts;
     counts[grade] = Math.max(parseInt(counts[grade], 10) + amt, 0);
-    this.setState({counts:counts});
+    this.setState({ counts: counts });
   }
 
-  handleTabClick(name, event) {
-    this.setState({activeTab:name});
+  updateGoal(event) {
+    this.setState({ goal: event.target.value });
   }
 
-  handleMoreOptionsClick(e) {
-    this.setState({showOptions: !this.state.showOptions});
+  updateTopGrade(event) {
+    this.setState({ topGrade: event.target.value });
+  }
+
+  handleTabClick(name) {
+    this.setState({ activeTab: name });
+  }
+
+  handleMoreOptionsClick() {
+    this.setState({ showOptions: !this.state.showOptions });
   }
 
   render() {
-    var self = this;
+    const self = this;
+    const grades = this.state.counts.map((count, grade) => <Grade key={grade + '_grade'} num={grade} count={count} onChange={self.updateCount}/>);
+    const sum = this.constructor.sumCounts(this.state.counts);
 
-    let grades = this.state.counts.map(function(count, grade){
-      return <Grade key={grade+"_grade"} num={grade} count={count} onChange={self.updateCount}/>;
-    });
-    let sum = this.sumCounts(this.state.counts);
     let maxColumns = 1;
-    let rows = this.state.previous.map(function(climbs, index) {
-      let i = [(<td>{self.getDateFromString(climbs.day)}</td>)];
-      for (let c in climbs.climbs) {
-        i.push(<td>{climbs.climbs[c]}</td>);
-        maxColumns = Math.max(maxColumns, c);
-      }
-      return <tr>{i}</tr>
+    const rows = this.state.previous.map((climbs) => {
+      const i = climbs.climbs.map( (climbCount, index) => {
+        maxColumns = Math.max(maxColumns, index);
+        return (<td>{climbCount}</td>);
+      });
+      i.unshift(<td>{self.constructor.getDateFromString(climbs.day)}</td>);
+      return <tr>{i}</tr>;
     });
 
-    let header = [];
-    for (let i=0; i <= maxColumns; i++) {
+    const header = [];
+    for (let i = 0; i <= maxColumns; i += 1) {
       header.push(<th>V{i}</th>);
     }
 
-    let tabs = this.props.tabs.map(function(tabName){
-      return <Tab key={tabName+"_tab"} onClick={self.handleTabClick.bind(self, tabName)} name={tabName} isactive={self.state.activeTab === tabName ? true: false}></Tab>
+    const tabs = this.props.tabs.map((tabName) => {
+      return <Tab key={`${tabName}_tab`} onClick={self.handleTabClick.bind(self, tabName)} name={tabName} isactive={self.state.activeTab === tabName} />;
     });
 
     return (
@@ -226,7 +230,7 @@ export default class App extends Component {
           <progress className="progress" value={sum} max={this.state.goal}>{sum}%</progress>
           {grades}
           <div>
-            <br/>
+            <br />
             <a className="button moreOptions is-small" onClick={this.handleMoreOptionsClick}>More Options</a>
             { this.state.showOptions ? <TodayOptions /> : null }
           </div>
@@ -238,7 +242,7 @@ export default class App extends Component {
             <h1 className="title is-3">Daily Point Sum</h1>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={this.state.formattedPrevious}>
-              <Line type='monotone' dataKey='points' stroke='#8884d8' strokeWidth={2} />
+                <Line type="monotone" dataKey="points" stroke="#8884d8" strokeWidth={2} />
                 <XAxis dataKey="name" />
                 <YAxis dataKey="points" />
                 <Tooltip />
@@ -262,39 +266,37 @@ export default class App extends Component {
           </div>
         </div>
 
-        <div className={this.state.activeTab === 'settings' ? 'is-active tab-pane': 'tab-pane '}>
-          <h1 className="title is-1">Settings</h1>
+        <div className={this.state.activeTab === 'settings' ? 'is-active tab-pane' : 'tab-pane '}>
+          <div className="level">
+            <div className="level-left"><h1 className="title is-1 ">Settings</h1></div>
+            <div className="level-right"><a className="button is-primary level-right" onClick={this.saveSettings}>Save</a></div>
+          </div>
           <div className="columns">
             <form className="column">
-              <label className="label" htmlFor="goal">Goal</label>
-              <input className="input" id="goal" value={this.state.goal} onChange={this.props.onChangeDate}/>
+              <label className="label" htmlFor="goal">Points Goal</label>
+              <input className="input" id="goal" value={this.state.goal} onChange={this.updateGoal} />
               <label className="label" htmlFor="topGrade">Top Grade</label>
               <p className="control">
                 <span className="select is-medium">
-                  <select>
-                    <option>3</option>
-                    <option>4</option>
-                    <option>5</option>
-                    <option>6</option>
-                    <option>7</option>
-                    <option>8</option>
-                    <option>9</option>
-                    <option>10</option>
-                    <option>11</option>
-                    <option>12</option>
+                  <select onChange={this.updateTopGrade}>
+                    {
+                      this.props.topGrades.map(function (item, index) {
+                        return <option value={item} selected={self.state.topGrade == item}>V{item}</option>;
+                      })
+                    }
                   </select>
                 </span>
               </p>
             </form>
-            <div className="column"></div>
+            <div className="column"/>
           </div>
         </div>
-
       </div>
-
     );
   }
 }
+
 App.defaultProps = {
-  tabs:['today', 'history', 'settings']
-}
+  tabs: ['today', 'history', 'settings'],
+  topGrades: [3,4,5,6,7,8,9,10,11,12]
+};

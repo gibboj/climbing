@@ -4,7 +4,8 @@
 
 .main-container {
   max-width:800px;
-  margin:80px auto;
+  padding:40px;
+  margin:20px auto;
 }
 .tab-pane {
   display: none;
@@ -54,7 +55,7 @@
   }
   .main-container {
     width:auto;
-    margin:20px;
+    margin:0 20px;
    // padding:0px 20px;
   }
 

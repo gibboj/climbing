@@ -15,7 +15,7 @@ export default class Grade extends Component {
     this.props.onChange(this.props.num, 1);
   }
 
-  render () {
+  render() {
     return (
       <div className="counter">
         <div className="count left">
@@ -27,7 +27,13 @@ export default class Grade extends Component {
         <a className="button" onClick={this.incrementCount} id="addButton">+</a>
         <a className="button" onClick={this.decrementCount} id="minusButton">-</a>
       </div>
-    )
+    );
   }
 }
+
+Grade.propTypes = {
+  count: React.PropTypes.number.isRequired,
+  onChange: React.PropTypes.func.isRequired,
+  num: React.PropTypes.number.isRequired
+};
 

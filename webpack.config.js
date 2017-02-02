@@ -46,7 +46,7 @@
 
 const webpack = require('webpack');
 const path = require('path');
-var ExtractTextPlugin = require("extract-text-webpack-plugin");
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
   entry: [
@@ -63,7 +63,7 @@ module.exports = {
     extensions: ['', '.js']
   },
   devServer: {
-    proxy:{
+    proxy: {
       '/api/**': {
         target: 'http://localhost:5001/',
         secure: false,
@@ -76,7 +76,7 @@ module.exports = {
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoErrorsPlugin(),
-    new ExtractTextPlugin("[name].css")
+    new ExtractTextPlugin('[name].css')
   ],
   module: {
     loaders: [
@@ -87,7 +87,7 @@ module.exports = {
       },
       {
         test: /\.scss$/,
-        loaders: ["style-loader", "css-loader", "sass-loader"]
+        loaders: ['style-loader', 'css-loader', 'sass-loader']
       }
     ]
   }

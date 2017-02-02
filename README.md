@@ -41,13 +41,8 @@ PROD
   ⚠   16:5    Unexpected console statement.                                                                                no-console
   ⚠   18:3    Unexpected console statement.                                                                                no-console
 
-  webpack.config.production.js:49:1
-  ✖   49:1    Unexpected var, use let or const instead.                                                                    no-var
-
   server/prod-server.js:14:3
   ⚠   14:3    Unexpected console statement.                                                                                no-console
-  ✖   14:53   Missing semicolon.                                                                                           semi
-  ✖   42:28   A space is required after ,.                                                                                 comma-spacing
 
   webpack.config.js:49:1
   ✖   49:1    Unexpected var, use let or const instead.                                                                    no-var
@@ -70,21 +65,18 @@ PROD
   ✖   28:9    Visible, non-interactive elements should not have mouse or keyboard event listeners                          jsx-a11y/no-static-element-interactions
   ✖   30:6    Missing semicolon.                                                                                           semi
 
-  server/RedisController.js:5:5
+  server/RedisController.js:5:19
   ⚠    8:29   Missing function expression name.                                                                            func-names
   ⚠    9:7    Unexpected console statement.                                                                                no-console
   ⚠   21:40   Missing function expression name.                                                                            func-names
-  ⚠   22:7    Unexpected console statement.                                                                                no-console
-  ⚠   33:15   Missing function expression name.                                                                            func-names
-  ✖    5:5    Unexpected var, use let or const instead.                                                                    no-var
-  ✖    5:17   Unexpected require().                                                                                        global-require
+  ⚠   32:15   Missing function expression name.                                                                            func-names
+  ✖    5:19   Unexpected require().                                                                                        global-require
   ✖    6:41   Expected exception block, space or tab after // in comment.                                                  spaced-comment
   ✖    8:29   Unexpected function expression.                                                                              prefer-arrow-callback
   ✖    9:19   Unexpected string concatenation.                                                                             prefer-template
   ✖   12:3    Block must not be padded by blank lines.                                                                     padded-blocks
   ✖   13:16   Expected this to be used by class method getBaseDayKey.                                                      class-methods-use-this
   ✖   13:17   uid is defined but never used.                                                                               no-unused-vars
-  ✖   14:9    today is never reassigned. Use const instead.                                                                prefer-const
   ✖   15:14   Unexpected string concatenation.                                                                             prefer-template
   ✖   16:8    Unexpected string concatenation.                                                                             prefer-template
   ✖   16:31   Infix operators must be spaced.                                                                              space-infix-ops
@@ -92,33 +84,29 @@ PROD
   ✖   21:25   Unexpected string concatenation.                                                                             prefer-template
   ✖   21:28   Infix operators must be spaced.                                                                              space-infix-ops
   ✖   21:40   Unexpected function expression.                                                                              prefer-arrow-callback
-  ✖   23:7    res is not defined.                                                                                          no-undef
-  ✖   24:7    Missing semicolon.                                                                                           semi
-  ✖   28:9    key is never reassigned. Use const instead.                                                                  prefer-const
-  ✖   29:28   Unexpected string concatenation.                                                                             prefer-template
-  ✖   29:31   Infix operators must be spaced.                                                                              space-infix-ops
-  ✖   29:43   Missing space before opening brace.                                                                          space-before-blocks
-  ✖   31:15   Unexpected string concatenation.                                                                             prefer-template
-  ✖   31:18   Infix operators must be spaced.                                                                              space-infix-ops
-  ✖   32:18   Unexpected string concatenation.                                                                             prefer-template
-  ✖   33:15   Unexpected function expression.                                                                              prefer-arrow-callback
-  ✖   33:23   Missing space before function parentheses.                                                                   space-before-function-paren
-  ✖   34:15   previousClimbs is never reassigned. Use const instead.                                                       prefer-const
-  ✖   35:11   Using ForInStatement is not allowed.                                                                         no-restricted-syntax
-  ✖   35:11   The body of a for-in should be wrapped in an if statement to filter unwanted properties from the prototype.  guard-for-in
-  ✖   35:15   There should be no spaces inside this paren.                                                                 space-in-parens
-  ✖   35:21   day is never reassigned. Use const instead.                                                                  prefer-const
-  ✖   36:33   A space is required after {.                                                                                 object-curly-spacing
-  ✖   36:34   Expected property shorthand.                                                                                 object-shorthand
-  ✖   36:75   A space is required before }.                                                                                object-curly-spacing
-  ✖   38:11   Assignment to property of function parameter resp.                                                           no-param-reassign
-  ✖   47:9    key is never reassigned. Use const instead.                                                                  prefer-const
-  ✖   48:35   A space is required after ,.                                                                                 comma-spacing
-  ✖   53:5    Expected exception block, space or tab after // in comment.                                                  spaced-comment
-  ✖   54:9    key is never reassigned. Use const instead.                                                                  prefer-const
-  ✖   54:16   Multiple spaces found before date.                                                                           no-multi-spaces
-  ✖   59:22   Unexpected string concatenation.                                                                             prefer-template
-  ✖   64:18   Missing () invoking a constructor.                                                                           new-parens
+  ✖   22:7    res is not defined.                                                                                          no-undef
+  ✖   23:7    Missing semicolon.                                                                                           semi
+  ✖   28:28   Unexpected string concatenation.                                                                             prefer-template
+  ✖   28:31   Infix operators must be spaced.                                                                              space-infix-ops
+  ✖   28:43   Missing space before opening brace.                                                                          space-before-blocks
+  ✖   30:15   Unexpected string concatenation.                                                                             prefer-template
+  ✖   30:18   Infix operators must be spaced.                                                                              space-infix-ops
+  ✖   31:18   Unexpected string concatenation.                                                                             prefer-template
+  ✖   32:15   Unexpected function expression.                                                                              prefer-arrow-callback
+  ✖   32:23   Missing space before function parentheses.                                                                   space-before-function-paren
+  ✖   33:15   previousClimbs is never reassigned. Use const instead.                                                       prefer-const
+  ✖   34:11   Using ForInStatement is not allowed.                                                                         no-restricted-syntax
+  ✖   34:11   The body of a for-in should be wrapped in an if statement to filter unwanted properties from the prototype.  guard-for-in
+  ✖   34:20   day is never reassigned. Use const instead.                                                                  prefer-const
+  ✖   35:33   A space is required after {.                                                                                 object-curly-spacing
+  ✖   35:34   Expected property shorthand.                                                                                 object-shorthand
+  ✖   35:75   A space is required before }.                                                                                object-curly-spacing
+  ✖   37:11   Assignment to property of function parameter resp.                                                           no-param-reassign
+  ✖   47:35   A space is required after ,.                                                                                 comma-spacing
+  ✖   52:5    Expected exception block, space or tab after // in comment.                                                  spaced-comment
+  ✖   53:18   Multiple spaces found before date.                                                                           no-multi-spaces
+  ✖   58:22   Unexpected string concatenation.                                                                             prefer-template
+  ✖   63:18   Missing () invoking a constructor.                                                                           new-parens
 
   scripts/App.js:3:19
   ⚠   77:15   Missing function expression name.                                                                            func-names
@@ -320,5 +308,5 @@ PROD
   ✖  299:8    Missing space before value for key tabs.                                                                     key-spacing
   ✖  300:2    Missing semicolon.                                                                                           semi
 
-  16 warnings
-  253 errors
+  15 warnings
+  244 errors
