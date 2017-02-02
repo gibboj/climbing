@@ -5,7 +5,6 @@
 .main-container {
   max-width:800px;
   margin:80px auto;
-
 }
 .tab-pane {
   display: none;
@@ -14,13 +13,16 @@
   }
 }
 
+// Modules
+
 .table {
   margin:20px 0;
 }
+
 .progress {
   margin:10px 0px;
 }
-// Modules
+
 .counter {
   padding:5px 10px;
   font-size:22px;
@@ -41,4 +43,19 @@
 }
 #all-data {
   margin-top:60px;
+}
+
+//
+//// Mobile
+//// This applies from 600px onwards
+@media (max-width: 500px) {
+  body {
+    width:auto;
+  }
+  .main-container {
+    width:auto;
+    margin:20px;
+   // padding:0px 20px;
+  }
+
 }
