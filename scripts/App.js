@@ -29,7 +29,6 @@ export default class App extends Component {
     super(props);
 
     this.state = {
-      loggedin: false,
       counts: [],
       sum: 0,
       goal: 0,
@@ -70,15 +69,15 @@ export default class App extends Component {
     this.setState({auth: auth2});
     // Listen for sign-in state changes.
     auth2.isSignedIn.listen(function (val) {
-      self.signinChanged(val);
+      self.signinChanged(val, auth2);
     });
   }
 
-  signinChanged (val) {
+  signinChanged (val, auth2) {
       this.setState({isLoggedIn: val});
 
-      if (val && this.state.auth !== null) {
-        let googleUser = this.state.auth.currentUser.get();
+      if (val) {
+        let googleUser = auth2.currentUser.get();
 
         // Useful data for your client-side scripts:
         var profile = googleUser.getBasicProfile();

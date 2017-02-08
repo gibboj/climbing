@@ -43,18 +43,18 @@ class RedisController {
         .exec((err, resp) => {
           let previousClimbs = [];
           let goal = 0;
-
-          Object.keys(resp[1]).forEach(function(day,index) {
-            if (resp[4] && resp[4][day]) {
-              goal = parseInt(resp[4][day], 10);
-            }
-            previousClimbs.push({day: day, climbs: resp[1][day].split(','), goals: goal});
-          });
-
+          if (typeof resp[1] == 'Object') {
+            Object.keys(resp[1]).forEach(function (day, index) {
+              if (resp[4] && resp[4][day]) {
+                goal = parseInt(resp[4][day], 10);
+              }
+              previousClimbs.push({day: day, climbs: resp[1][day].split(','), goals: goal});
+            });
+          }
           callback(err, [resp[0], previousClimbs, resp[2], resp[3], resp[5]]);
         });
     } else {
-      this.callback('error', null);
+      callback(null, [[], [], 0, 0, []]);
     }
   }
 
