@@ -43,7 +43,7 @@ class RedisController {
         .exec((err, resp) => {
           let previousClimbs = [];
           let goal = 0;
-          console.log(resp[1]);
+
           Object.keys(resp[1]).forEach(function(day,index) {
             if (resp[4] && resp[4][day]) {
               goal = parseInt(resp[4][day], 10);

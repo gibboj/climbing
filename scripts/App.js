@@ -32,7 +32,7 @@ export default class App extends Component {
       loggedin: false,
       counts: [],
       sum: 0,
-      goal: 50,
+      goal: 0,
       topGrade: 6,
       topClimb: 0,
       uid: 1,
@@ -82,12 +82,7 @@ export default class App extends Component {
 
         // Useful data for your client-side scripts:
         var profile = googleUser.getBasicProfile();
-        console.log("ID: " + profile.getId()); // Don't send this directly to your server!
-        console.log('Full Name: ' + profile.getName());
-        console.log('Given Name: ' + profile.getGivenName());
-        console.log('Family Name: ' + profile.getFamilyName());
-        console.log("Image URL: " + profile.getImageUrl());
-        console.log("Email: " + profile.getEmail());
+        this.setState({uid: profile.getId()});
         this.loadData();
       } else {
         this.clearData();
@@ -196,13 +191,13 @@ export default class App extends Component {
           for (let i = 0; i < previous.length; i += 1) {
             if (previous[i].day === today) {
               previous[i].climbs = self.state.counts;
-
+              previous[i].goals = self.state.goal;
               updated = true;
             }
           }
 
           if (!updated) {
-            previous.push({ day: today, climbs: self.state.counts });
+            previous.push({ day: today, climbs: self.state.counts,goals: self.state.goal });
           }
         } else {
           self.showError('could not save grades!');
@@ -240,7 +235,7 @@ export default class App extends Component {
   }
 
   updateGoal(event) {
-    this.setState({ goal: event.target.value });
+    this.setState({ goal: parseInt(event.target.value,10) });
   }
 
   updateTopGrade(event) {
@@ -270,7 +265,7 @@ export default class App extends Component {
     return (
       // Add your component markup and other subcomponent references here.
       <div className="main-container">
-        <div className="is-centered">
+        <div className="signout" >
           {!this.state.isLoggedIn ? '' : (<a onClick={this.googleSignOut}>Sign Out</a>)}
         </div>
         { this.state.isLoggedIn ?

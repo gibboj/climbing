@@ -21,8 +21,8 @@ export default class History extends Component {
 
   formatPreviousGraph(previous) {
     const self = this;
-
-    return previous.map((climbs) => {
+    const min = 5;
+    let prev =  previous.map((climbs) => {
       let sum = 0;
       climbs.climbs.map((count, i) => {
         sum += parseInt(count, 10) * i;
@@ -30,6 +30,12 @@ export default class History extends Component {
 
       return { name: self.constructor.getDateFromString(climbs.day), points: sum, goals: climbs.goals};
     });
+
+    const dataAvail = prev.length;
+    for (let i = 0; i < (min - dataAvail); i++) {
+      prev.unshift({ name: '', points: 0, goals: 0});
+    }
+    return prev;
   }
 
   render() {
