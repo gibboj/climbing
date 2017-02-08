@@ -22,7 +22,7 @@ export default class Grade extends Component {
           <span>V{this.props.num} &nbsp;</span>
         </div>
         <div className="count">
-          <span className="subtitle is-2"> {this.props.count}</span>
+          <span className="subtitle is-2">{this.props.count}</span>
         </div>
         <a className="button" onClick={this.incrementCount} id="addButton">+</a>
         <a className="button" onClick={this.decrementCount} id="minusButton">-</a>
@@ -32,7 +32,7 @@ export default class Grade extends Component {
 }
 
 Grade.propTypes = {
-  count: React.PropTypes.string.isRequired,
+  count: React.PropTypes.number.isRequired,
   onChange: React.PropTypes.func.isRequired,
   num: React.PropTypes.number.isRequired
 };

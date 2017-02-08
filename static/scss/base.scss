@@ -14,6 +14,9 @@
   }
 }
 
+.hidden {
+  display:none;
+}
 // Modules
 
 .table {
@@ -59,4 +62,13 @@
    // padding:0px 20px;
   }
 
+}
+
+.signin {
+  width: 100%;
+  text-align: center;
+  > div {
+    margin: 35px auto;
+    display: inline-block;
+  }
 }

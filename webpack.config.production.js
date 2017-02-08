@@ -55,6 +55,11 @@ module.exports = {
     filename: 'bundle.js',
     publicPath: '/static'
   },
+  externals: {
+    // require("jquery") is external and available
+    //  on the global var jQuery
+    "googleapis": "gapi"
+  },
   resolve: {
     extensions: ['', '.js']
   },

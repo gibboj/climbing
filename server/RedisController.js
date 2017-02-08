@@ -39,14 +39,19 @@ class RedisController {
         .hget(`${uid}:goal`, key)
         .get(`${uid}:topgrade`)
         .hgetall(`${uid}:goal`)
+        .get(`${uid}:topclimb`)
         .exec((err, resp) => {
           let previousClimbs = [];
           let goal = 0;
-          for (let day in resp[1]) {
-            goal = resp[4][day] ? parseInt(resp[4][day], 10) : goal;
+          console.log(resp[1]);
+          Object.keys(resp[1]).forEach(function(day,index) {
+            if (resp[4] && resp[4][day]) {
+              goal = parseInt(resp[4][day], 10);
+            }
             previousClimbs.push({day: day, climbs: resp[1][day].split(','), goals: goal});
-          }
-          callback(err, [resp[0], previousClimbs, resp[2], resp[3]]);
+          });
+
+          callback(err, [resp[0], previousClimbs, resp[2], resp[3], resp[5]]);
         });
     } else {
       this.callback('error', null);

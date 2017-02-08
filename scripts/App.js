@@ -1,44 +1,47 @@
 import React, { Component } from 'react';
 import $ from 'webpack-zepto';
-import { LineChart, ResponsiveContainer, Tooltip, Line, XAxis, YAxis } from 'recharts';
-import Grade from './modules/Grades';
+import Counter from './modules/Counter';
+import History from './modules/History';
 import Tab from './modules/Tab';
 import TodayOptions from './modules/TodayOptions';
-
+var google = require('googleapis');
 require('./../static/scss/base.scss');
 
-
 export default class App extends Component {
-  static getDateFromString (day) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
-    const date = day.substring(0, 2);
-    const month = parseInt(day.substring(2, 4), 10);
-    return date + ' ' + months[month - 1];
+
+  static googleSignIn(googleUser) {
+    // Useful data for your client-side scripts:
+    var profile = googleUser.getBasicProfile();
+    console.log("ID: " + profile.getId()); // Don't send this directly to your server!
+    console.log('Full Name: ' + profile.getName());
+    console.log('Given Name: ' + profile.getGivenName());
+    console.log('Family Name: ' + profile.getFamilyName());
+    console.log("Image URL: " + profile.getImageUrl());
+    console.log("Email: " + profile.getEmail());
+
+    // The ID token you need to pass to your backend:
+    var id_token = googleUser.getAuthResponse().id_token;
+    console.log("ID Token: " + id_token);
   }
 
-  static sumCounts(counts) {
-    let sum = 0;
-    for (const grade in counts) {
-      sum += grade * counts[grade];
-    }
-    return sum;
-  }
 
   constructor(props) {
     super(props);
 
     this.state = {
+      loggedin: false,
       counts: [],
       sum: 0,
       goal: 50,
       topGrade: 6,
+      topClimb: 0,
       uid: 1,
       today: '',
       previous: [],
-      formattedPrevious: [],
       showOptions: false,
-      activeTab: 'today'
+      activeTab: 'today',
+      auth: null,
+      isLoggedIn : false
     };
 
     this.handleMoreOptionsClick = this.handleMoreOptionsClick.bind(this);
@@ -48,12 +51,82 @@ export default class App extends Component {
     this.updateTopGrade = this.updateTopGrade.bind(this);
     this.saveGrades = this.saveGrades.bind(this);
     this.saveSettings= this.saveSettings.bind(this);
+    this.googleSignOut = this.googleSignOut.bind(this);
   }
 
+  /*************************************************************
+   *               Google Login Information                    *
+   *************************************************************/
+  googleSignOut() {
+    this.state.auth.signOut();
+  }
 
+  initGoogleSignin () {
+    let self = this;
+    let auth2 = google.auth2.init({
+      client_id: '370807824900-9ss6o43n25ff31026msg0rqmv57c7fjo.apps.googleusercontent.com',
+      scope: 'profile'
+    });
+    this.setState({auth: auth2});
+    // Listen for sign-in state changes.
+    auth2.isSignedIn.listen(function (val) {
+      self.signinChanged(val);
+    });
+  }
+
+  signinChanged (val) {
+      this.setState({isLoggedIn: val});
+
+      if (val && this.state.auth !== null) {
+        let googleUser = this.state.auth.currentUser.get();
+
+        // Useful data for your client-side scripts:
+        var profile = googleUser.getBasicProfile();
+        console.log("ID: " + profile.getId()); // Don't send this directly to your server!
+        console.log('Full Name: ' + profile.getName());
+        console.log('Given Name: ' + profile.getGivenName());
+        console.log('Family Name: ' + profile.getFamilyName());
+        console.log("Image URL: " + profile.getImageUrl());
+        console.log("Email: " + profile.getEmail());
+        this.loadData();
+      } else {
+        this.clearData();
+      }
+  }
+
+  /*************************************************************
+   *                       Data Loading                        *
+   *************************************************************/
   componentDidMount() {
     const self = this;
+
+    google.load('auth2', function () {
+      self.initGoogleSignin();
+    });
+  }
+
+  clearData() {
+    this.setState({
+      loggedin: false,
+      counts: [],
+      sum: 0,
+      goal: 10,
+      topGrade: 5,
+      topClimb: 0,
+      uid: -1,
+      today: '',
+      previous: [],
+      showOptions: false,
+      activeTab: 'today',
+      auth: null,
+      isLoggedIn : false
+    });
+  }
+
+  loadData () {
+    var self = this;
     const url = `/api/climbs/${this.state.uid}`;
+
     $.ajax({
       url,
       contentType: 'application/json',
@@ -75,7 +148,6 @@ export default class App extends Component {
         if (res[1]) {
           state.previous = res[1];
         }
-        state.formattedPrevious = self.formatPreviousGraph(state.previous);
 
         if (res[2]) {
           state.goal = res[2];
@@ -85,24 +157,18 @@ export default class App extends Component {
           state.topGrade = res[3];
         }
 
+        if (res[4]) {
+          state.topClimb = res[4];
+        }
+
         self.setState(state);
       }
     });
   }
 
-
-  formatPreviousGraph(previous) {
-    const self = this;
-
-    return previous.map((climbs) => {
-      let sum = 0;
-      climbs.climbs.map((count, i) => {
-        sum += parseInt(count, 10) * i;
-      });
-
-      return { name: self.constructor.getDateFromString(climbs.day), points: sum, goals: climbs.goals};
-    });
-  }
+  /*************************************************************
+   *                       Save Function                       *
+   *************************************************************/
 
   saveGrades() {
     const self = this;
@@ -130,6 +196,7 @@ export default class App extends Component {
           for (let i = 0; i < previous.length; i += 1) {
             if (previous[i].day === today) {
               previous[i].climbs = self.state.counts;
+
               updated = true;
             }
           }
@@ -140,14 +207,12 @@ export default class App extends Component {
         } else {
           self.showError('could not save grades!');
         }
-        self.setState({ formattedPrevious: self.formatPreviousGraph(previous), previous });
       }
     });
   }
 
   saveSettings() {
     let url = `/api/settings/${this.state.uid}`;
-
     $.ajax({
       url,
       contentType: 'application/json',
@@ -159,9 +224,10 @@ export default class App extends Component {
     });
   }
 
-  showError(msg) {
-    this.setState({ error: msg });
-  }
+
+  /*************************************************************
+   *                       Update State Function               *
+   *************************************************************/
 
   updateDate(event) {
     this.setState({ today: event.target.value });
@@ -181,7 +247,7 @@ export default class App extends Component {
     this.setState({ topGrade: event.target.value });
   }
 
-  handleTabClick(name) {
+  updateTabClick(name) {
     this.setState({ activeTab: name });
   }
 
@@ -189,111 +255,68 @@ export default class App extends Component {
     this.setState({ showOptions: !this.state.showOptions });
   }
 
+  showError(msg) {
+    this.setState({ error: msg });
+  }
+
+
   render() {
     const self = this;
-    const grades = this.state.counts.map((count, grade) => <Grade key={grade + '_grade'} num={grade} count={count} onChange={self.updateCount}/>);
-    const sum = this.constructor.sumCounts(this.state.counts);
-
-    let maxColumns = 1;
-
-    const rows = this.state.previous.map((climbs) => {
-      const i = climbs.climbs.map( (climbCount, index) => {
-        maxColumns = Math.max(maxColumns, index);
-        return (<td>{climbCount}</td>);
-      });
-      i.unshift(<td>{self.constructor.getDateFromString(climbs.day)}</td>);
-      return <tr>{i}</tr>;
-    });
-
-    const header = [];
-    for (let i = 0; i <= maxColumns; i += 1) {
-      header.push(<th>V{i}</th>);
-    }
 
     const tabs = this.props.tabs.map((tabName) => {
-      return <Tab key={`${tabName}_tab`} onClick={self.handleTabClick.bind(self, tabName)} name={tabName} isactive={self.state.activeTab === tabName} />;
+      return <Tab key={`${tabName}_tab`} onClick={self.updateTabClick.bind(self, tabName)} name={tabName} isactive={self.state.activeTab === tabName} />;
     });
 
     return (
       // Add your component markup and other subcomponent references here.
       <div className="main-container">
-        <div className="tabs is-boxed is-centered">
+        <div className="is-centered">
+          {!this.state.isLoggedIn ? '' : (<a onClick={this.googleSignOut}>Sign Out</a>)}
+        </div>
+        { this.state.isLoggedIn ?
+          (<div className="tabs is-boxed is-centered">
           <ul>
             {tabs}
           </ul>
-        </div>
+        </div>):'' }
 
-        <div className={this.state.activeTab === 'today' ? 'is-active tab-pane': 'tab-pane '}>
-          <div className="level">
-            <div className="level-left"><h1 className="title is-1 ">Today</h1></div>
-            <div className="level-right"><a className="button is-primary level-right" onClick={this.saveGrades}>Save</a></div>
-          </div>
-          <div><p className="subtitle is-3">Points: {sum} / {this.state.goal}</p></div>
-          <progress className="progress" value={sum} max={this.state.goal}>{sum}%</progress>
-          {grades}
-          <div>
-            <br />
-            <a className="button moreOptions is-small" onClick={this.handleMoreOptionsClick}>More Options</a>
-            { this.state.showOptions ? <TodayOptions /> : null }
-          </div>
+        <div className={this.state.isLoggedIn ? 'hidden signin':'signin'} >
+          <h1 className="title is-1">Boulder Tracking</h1>
+          <h2 className="subtitle is-3">Log your climbs.</h2>
+          <div className={'g-signin2'} data-onsuccess={this.googleSignIn}></div>
         </div>
+        { this.state.isLoggedIn ?
+          (<div>
+          <Counter isActive={this.state.activeTab === 'today'} saveGrades={this.saveGrades} counts={this.state.counts} goal={this.state.goal} showOptions={this.state.showOptions} updateCount={this.updateCount}/>
+          <History isActive={this.state.activeTab === 'history'} previous={this.state.previous} />
 
-        <div className={this.state.activeTab === 'history' ? 'is-active tab-pane': 'tab-pane'}>
-          <h1 className="title is-1">History</h1>
-          <div>
-            <h1 className="title is-3">Daily Point Sum</h1>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={this.state.formattedPrevious}>
-                <Line type="natural" dataKey="points" stroke="#ff7300" strokeWidth={2} />
-                <Line type="stepBefore" dataKey="goals" stroke="#8884d8" strokeWidth={2} />
-                <XAxis dataKey="name" />
-                <YAxis/>
-                <Tooltip/>
-              </LineChart>
-            </ResponsiveContainer>
+          <div className={this.state.activeTab === 'settings' ? 'is-active tab-pane' : 'tab-pane '}>
+            <div className="level">
+              <div className="level-left"><h1 className="title is-1 ">Settings</h1></div>
+              <div className="level-right"><a className="button is-primary level-right" onClick={this.saveSettings}>Save</a></div>
+            </div>
+            <div className="columns">
+              <form className="column">
+                <label className="label" htmlFor="goal">Points Goal</label>
+                <input className="input" id="goal" value={this.state.goal} onChange={this.updateGoal} />
+                <label className="label" htmlFor="topGrade">Top Grade</label>
+                <p className="control">
+                  <span className="select is-medium">
+                    <select value={self.state.topGrade} onChange={this.updateTopGrade}>
+                      {
+                        this.props.topGrades.map(function (item, index) {
+                          return <option key={item+"_selectGrade" } value={item} >V{item}</option>;
+                        })
+                      }
+                    </select>
+                  </span>
+                </p>
+              </form>
+              <div className="column"/>
+            </div>
           </div>
-
-          <div id="all-data">
-            <h1 className="title is-3">All Data</h1>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th><abbr title="date">Date</abbr></th>
-                  {header}
-                </tr>
-              </thead>
-              <tbody>
-              {rows}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className={this.state.activeTab === 'settings' ? 'is-active tab-pane' : 'tab-pane '}>
-          <div className="level">
-            <div className="level-left"><h1 className="title is-1 ">Settings</h1></div>
-            <div className="level-right"><a className="button is-primary level-right" onClick={this.saveSettings}>Save</a></div>
-          </div>
-          <div className="columns">
-            <form className="column">
-              <label className="label" htmlFor="goal">Points Goal</label>
-              <input className="input" id="goal" value={this.state.goal} onChange={this.updateGoal} />
-              <label className="label" htmlFor="topGrade">Top Grade</label>
-              <p className="control">
-                <span className="select is-medium">
-                  <select onChange={this.updateTopGrade}>
-                    {
-                      this.props.topGrades.map(function (item, index) {
-                        return <option value={item} selected={self.state.topGrade == item}>V{item}</option>;
-                      })
-                    }
-                  </select>
-                </span>
-              </p>
-            </form>
-            <div className="column"/>
-          </div>
-        </div>
+        </div>)
+            : ''}
       </div>
     );
   }
