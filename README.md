@@ -3,8 +3,11 @@ It just counts things, but it has the labels I want
 
 Running
 DEV
+* screen redis
+*
 
 PROD
+* git pull origin master
 * npm run build
 * sudo forever restart prod-server.js
 

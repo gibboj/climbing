@@ -211,7 +211,7 @@ export default class App extends Component {
       url,
       contentType: 'application/json',
       type: 'POST',
-      data: JSON.stringify({ topGrade: this.state.topGrade, goal: this.state.goal }),
+      data: JSON.stringify({ topGrade: this.state.topGrade, goal: this.state.goal}),
       success: (res) => {
         console.log(res.result);
       }
@@ -234,7 +234,13 @@ export default class App extends Component {
   }
 
   updateGoal(event) {
-    this.setState({ goal: parseInt(event.target.value,10) });
+    let val = parseInt(event.target.value,10);
+    if (event.target.value == '') {
+      val = '';
+      this.setState({ goal: val });
+    } else if(!isNaN(val)) {
+      this.setState({ goal: val });
+    }
   }
 
   updateTopGrade(event) {

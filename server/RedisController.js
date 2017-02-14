@@ -21,11 +21,11 @@ class RedisController {
 
   saveSettings(uid, data) {
     if (data.topGrade) {
-      this.client.set(`${uid}:topgrade`, data.topGrade);
+      this.client.set(`${uid}:topgrade`, parseInt(data.topGrade,10));
     }
 
     if (data.goal) {
-      this.client.hset(`${uid}:goal`, this.constructor.getBaseDayKey(), data.goal);
+      this.client.hset(`${uid}:goal`, this.constructor.getBaseDayKey(), parseInt(data.goal,10));
     }
     return this.client.bgsave();
   }
@@ -43,18 +43,20 @@ class RedisController {
         .exec((err, resp) => {
           let previousClimbs = [];
           let goal = 0;
-          if (typeof resp[1] == 'Object') {
+          if (typeof resp[1] == 'object') {
             Object.keys(resp[1]).forEach(function (day, index) {
               if (resp[4] && resp[4][day]) {
                 goal = parseInt(resp[4][day], 10);
               }
               previousClimbs.push({day: day, climbs: resp[1][day].split(','), goals: goal});
             });
+          } else {
+            console.log(typeof resp[1], "TYPEOF climbs");
           }
           callback(err, [resp[0], previousClimbs, resp[2], resp[3], resp[5]]);
         });
     } else {
-      callback(null, [[], [], 0, 0, []]);
+      callback(`ERROR: could not find climb data for ${uid}`, [[], [], 0, 0, []]);
     }
   }
 
@@ -67,8 +69,14 @@ class RedisController {
   }
 
   saveGrade(uid, key, data) {
+    console.log("SAVE GRADE");
+    console.log(data);
     this.client.hset(`${uid}:climbs`, key, data.join(','));
     return this.client.bgsave();
+  }
+
+  clearUser() {
+
   }
 }
 
