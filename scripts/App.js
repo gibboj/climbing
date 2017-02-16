@@ -205,7 +205,8 @@ export default class App extends Component {
     });
   }
 
-  saveSettings() {
+  saveSettings(e) {
+    e.preventDefault();
     let url = `/api/settings/${this.state.uid}`;
     $.ajax({
       url,
@@ -234,6 +235,8 @@ export default class App extends Component {
   }
 
   updateGoal(event) {
+    event.preventDefault();
+    event.stopPropagation();
     let val = parseInt(event.target.value,10);
     if (event.target.value == '') {
       val = '';
@@ -296,7 +299,7 @@ export default class App extends Component {
               <div className="level-right"><a className="button is-primary level-right" onClick={this.saveSettings}>Save</a></div>
             </div>
             <div className="columns">
-              <form className="column">
+              <form onSubmit={this.saveSettings} className="column">
                 <label className="label" htmlFor="goal">Points Goal</label>
                 <input className="input" id="goal" value={this.state.goal} onChange={this.updateGoal} />
                 <label className="label" htmlFor="topGrade">Top Grade</label>

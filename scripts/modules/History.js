@@ -22,18 +22,23 @@ export default class History extends Component {
   formatPreviousGraph(previous) {
     const self = this;
     const min = 5;
+    let prevGoal = 0;
     let prev =  previous.map((climbs) => {
       let sum = 0;
       climbs.climbs.map((count, i) => {
         sum += parseInt(count, 10) * i;
       });
-
+      if(climbs.goals < 0) {
+        climbs.goals = prevGoal;
+      } else {
+        prevGoal = climbs.goals;
+      }
       return { name: self.constructor.getDateFromString(climbs.day), points: sum, goals: climbs.goals};
     });
 
     const dataAvail = prev.length;
     for (let i = 0; i < (min - dataAvail); i++) {
-      prev.unshift({ name: '', points: 0, goals: 0});
+      prev.unshift({ name: '--', points: 0, goals: 0});
     }
     return prev;
   }
@@ -61,12 +66,12 @@ export default class History extends Component {
 
     return (
       <div className={this.props.isActive ? 'is-active tab-pane': 'tab-pane'}>
-        <h1 className="title is-1">History</h1>
+        <h1 className="title is-1">History <span><i className="fa fa-check-circle-o" aria-hidden="true"></i>saved</span></h1>
         <div>
           <h1 className="title is-3">Daily Point Sum</h1>
           <ResponsiveContainer width='100%' height={300}>
             <LineChart data={formatPrevious}>
-              <Line type="natural" dataKey="points" stroke="#ff7300" strokeWidth={2} />
+              <Line type="linear" dataKey="points" stroke="#ff7300" strokeWidth={2} />
               <Line type="stepBefore" dataKey="goals" stroke="#8884d8" strokeWidth={2} />
               <XAxis dataKey="name" />
               <YAxis/>

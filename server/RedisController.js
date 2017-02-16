@@ -31,6 +31,7 @@ class RedisController {
   }
 
   getLoadData(uid, callback) {
+    let self = this;
     const key = this.constructor.getBaseDayKey();
     if (this.client.exists(`${uid}:climbs`)){
       this.client.multi()
@@ -47,17 +48,30 @@ class RedisController {
             Object.keys(resp[1]).forEach(function (day, index) {
               if (resp[4] && resp[4][day]) {
                 goal = parseInt(resp[4][day], 10);
+              } else {
+                goal = -1;
               }
               previousClimbs.push({day: day, climbs: resp[1][day].split(','), goals: goal});
             });
-          } else {
-            console.log(typeof resp[1], "TYPEOF climbs");
+
+            previousClimbs.sort((a,b) => {
+              a = self.getDateFromString(a.day);
+              b = self.getDateFromString(b.day);
+              return a>b ? 1 : a<b ? -1 : 0;
+            });
           }
           callback(err, [resp[0], previousClimbs, resp[2], resp[3], resp[5]]);
         });
     } else {
       callback(`ERROR: could not find climb data for ${uid}`, [[], [], 0, 0, []]);
     }
+  }
+
+  getDateFromString(stringDate) {
+    const date = stringDate.substring(0, 2);
+    const month = parseInt(stringDate.substring(2, 4), 10);
+    const year = parseInt(stringDate.substring(4, 8), 10);
+    return new Date(year, month - 1, date);
   }
 
   saveToday(uid, data) {
@@ -69,8 +83,6 @@ class RedisController {
   }
 
   saveGrade(uid, key, data) {
-    console.log("SAVE GRADE");
-    console.log(data);
     this.client.hset(`${uid}:climbs`, key, data.join(','));
     return this.client.bgsave();
   }
